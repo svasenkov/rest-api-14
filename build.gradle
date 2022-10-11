@@ -33,6 +33,7 @@ dependencies {
             "com.codeborne:selenide:6.7.2",
             "io.qameta.allure:allure-selenide:$allureVersion",
             "io.rest-assured:rest-assured:$restAssuredVersion",
+            "io.qameta.allure:allure-rest-assured:$allureVersion",
             "org.assertj:assertj-core:$assertJVersion",
             "org.junit.jupiter:junit-jupiter:$junitVersion",
             "org.slf4j:slf4j-simple:$slf4jVersion"
