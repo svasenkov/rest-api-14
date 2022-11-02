@@ -3,7 +3,9 @@ package tests;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.WebDriverRunner;
+import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Cookie;
@@ -11,6 +13,7 @@ import org.openqa.selenium.Cookie;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 import static io.restassured.RestAssured.given;
+import static java.lang.String.format;
 import static org.hamcrest.Matchers.is;
 
 public class DemowebshopTests {
@@ -149,6 +152,80 @@ curl 'https://demowebshop.tricentis.com/addproducttocart/details/72/1' \
 
         open("/Themes/DefaultClean/Content/images/logo.png");
         Cookie authCookie = new Cookie(authCookieName, authCookieValue);
+        WebDriverRunner.getWebDriver().manage().addCookie(authCookie);
+        open("");
+        $(".cart-qty").shouldHave(Condition.text(cartSize));
+    }
+
+    @Test
+    void addToCartWithRegistrationTest() {
+        Faker faker = new Faker();
+        String email = faker.internet().emailAddress();
+        String registerCookieName = "Nop.customer";
+        String authCookieName = "NOPCOMMERCE.AUTH";
+
+        String registerBody = format("Gender: \n" +
+                "M\n" +
+                "FirstName: \n" +
+                "Alex\n" +
+                "LastName: \n" +
+                "Egorov\n" +
+                "Email: \n" +
+                "%s\n" +
+                "Password: \n" +
+                "asddsa@dsa.asd\n" +
+                "ConfirmPassword: \n" +
+                "asddsa@dsa.asd", email);
+
+//        String registerCookieValue = given()
+        Response response = given()
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .body(registerBody)
+                .log().all()
+                .when()
+                .post("/register")
+                .then()
+                .log().all()
+                .statusCode(302)
+                .extract()
+                .response();
+
+        String authCookieValue = given()
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .cookie(registerCookieName, "registerCookieValue")
+                .log().all()
+                .when()
+                .get("/registerresult/1")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .extract()
+                .cookie(authCookieName);
+
+        String body = "product_attribute_72_5_18=53" +
+                "&product_attribute_72_6_19=54" +
+                "&product_attribute_72_3_20=57" +
+                "&addtocart_72.EnteredQuantity=1";
+
+        String cartSize = given()
+                .log().uri()
+                .log().body()
+                .contentType("application/x-www-form-urlencoded; charset=UTF-8")
+                .cookie(authCookieName, "")
+//                .cookie(authCookieName, authCookieValue)
+                .body(body)
+                .when()
+                .post("/addproducttocart/details/72/1")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .body("success", is(true))
+                .body("message", is("The product has been added to your <a href=\"/cart\">shopping cart</a>"))
+                .extract().path("updatetopcartsectionhtml");
+
+        open("/Themes/DefaultClean/Content/images/logo.png");
+        Cookie authCookie = new Cookie(authCookieName, "");
         WebDriverRunner.getWebDriver().manage().addCookie(authCookie);
         open("");
         $(".cart-qty").shouldHave(Condition.text(cartSize));

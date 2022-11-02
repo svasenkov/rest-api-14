@@ -34,6 +34,7 @@ dependencies {
             "io.qameta.allure:allure-selenide:$allureVersion",
             "io.rest-assured:rest-assured:$restAssuredVersion",
             "io.qameta.allure:allure-rest-assured:$allureVersion",
+            "com.github.javafaker:javafaker:1.0.2",
             "org.assertj:assertj-core:$assertJVersion",
             "org.junit.jupiter:junit-jupiter:$junitVersion",
             "org.slf4j:slf4j-simple:$slf4jVersion"
